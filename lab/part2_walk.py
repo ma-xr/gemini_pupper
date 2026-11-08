@@ -59,7 +59,22 @@ def check_move(vx: float, vy: float, wz_deg: float, duration: float, limits: Mov
     # 3. The duration must be more than 0 and at most limits.duration_max.
     # 4. Too far: speed * duration > limits.distance_max, where speed = (vx**2 + vy**2) ** 0.5.
     # 5. Nothing wrong: return None.
-    return "TODO 2 is not written yet (check_move in lab/part2_walk.py)"
+    if abs(vx) > limits.vx_max or abs(vy) > limits.vy_max or abs(wz_deg) > limits.wz_max:
+        return (
+            f"too fast: limits are |vx|<={limits.vx_max} m/s, |vy|<={limits.vy_max} m/s, "
+            f"|wz|<={limits.wz_max} deg/s"
+        )
+    if abs(vx) < limits.vx_min and abs(vy) < limits.vy_min and abs(wz_deg) < limits.wz_min:
+        return (
+            f"too slow to move: use |vx|>={limits.vx_min} m/s, |vy|>={limits.vy_min} m/s, "
+            f"or |wz|>={limits.wz_min} deg/s"
+        )
+    if duration <= 0 or duration > limits.duration_max:
+        return f"bad duration {duration:g} s: must be more than 0 and at most {limits.duration_max} s"
+    distance = (vx**2 + vy**2) ** 0.5 * duration
+    if distance > limits.distance_max:
+        return f"too far: {distance:.2f} m, one move goes at most {limits.distance_max} m"
+    return None
     # ====================================
 
 
