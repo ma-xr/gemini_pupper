@@ -52,7 +52,11 @@ async def prepare_to_move(robot: Robot) -> str:
     # 2. Turn the person follower off: await robot.stop_following()
     # 3. Stand still (the follower may have been walking): robot.send_speed(0, 0, 0)
     # 4. Return the note Gemini will read, e.g. "Stopped following the person first."
-    return ""  # for now: following never ends
+    if not robot.following:
+        return ""  # not following: nothing to stop, and no note
+    await robot.stop_following()  # right away, not in a job: Pupper stops following now
+    robot.send_speed(0, 0, 0)  # the follower may have been walking: stand still
+    return "Stopped following the person first."  # so Gemini can tell the person
     # ====================================
 
 
@@ -70,11 +74,14 @@ async def prepare_to_move(robot: Robot) -> str:
 # ========== TODO 6: YOUR CODE HERE ==========
 @tool(
     "follow",
-    "TODO 6: describe the follow tool for Gemini.",
-    enabled=Param("boolean", "TODO 6"),
+    "Start or stop follow mode: Pupper walks after the nearest person it sees with its camera,"
+    " in a straight line, and stops a little in front of them. Talking and questions (like"
+    " 'what do you see?' or robot_status) keep follow mode on. Any motion tool (move, turn,"
+    " arc, play_trick, interactive_action, stand_up, lie_down) ends it, and so does stop.",
+    enabled=Param("boolean", "true to start following the nearest person, false to stop following."),
 )
 async def follow_tool(robot: Robot, enabled: bool) -> Result:
     # One line: robot.set_following(enabled) (provided) starts or stops following, and
     # returns the Result Gemini should hear. Await it and return it.
-    return not_written("TODO 6", "follow in lab/part3_follow.py")
+    return await robot.set_following(enabled)
 # ====================================
