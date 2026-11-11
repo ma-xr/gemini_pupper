@@ -274,13 +274,19 @@ async def move_tool(
 #             that quietly turned slower
 #   Test: python3 lab/test.py todo4
 # ========== TODO 4: YOUR CODE HERE ==========
+def min_radius(speed: float, wz_max: float = LIMITS.wz_max) -> float:
+    """The tightest circle Pupper can walk at this speed, rounded UP to the cm, so the
+    number in the description is one the code accepts (0.201 m -> 0.21, not 0.20)."""
+    return math.ceil(speed / math.radians(wz_max) * 100) / 100
+
+
 @tool(
     "arc",
     "Walk forward and turn at the same time, around part of a circle: for curves, circles,"
     " U-turns, and going around someone. The tighter the circle, the faster Pupper must turn,"
     f" and it turns at most {LIMITS.wz_max} deg/s: so the radius must be at least"
-    f" {0.4 / math.radians(LIMITS.wz_max):.2f} m at a walk (0.4 m/s) and"
-    f" {RUN_DEFAULT_SPEED / math.radians(LIMITS.wz_max):.2f} m at a run ({RUN_DEFAULT_SPEED} m/s)."
+    f" {min_radius(0.4)} m at a walk (0.4 m/s) and"
+    f" {min_radius(RUN_DEFAULT_SPEED)} m at a run ({RUN_DEFAULT_SPEED} m/s)."
     f" One arc goes at most {LIMITS.distance_max} m of path (a full circle of radius 1 m is 6.3 m)."
     " Not for straight sides or sharp corners (a square, a star): use move and turn for those,"
     " or radius 0 for a corner." + PREPARES_MOVE,
@@ -293,7 +299,7 @@ async def move_tool(
     radius=Param(
         "number",
         "Radius of the circle in metres, default 0.5. 0 means a sharp corner (turn in place)."
-        f" At least {0.4 / math.radians(LIMITS.wz_max):.2f} m at a walk.",
+        f" At least {min_radius(0.4)} m at a walk.",
         required=False,
     ),
     speed=Param(
@@ -325,8 +331,7 @@ async def arc_tool(
     # 2. Too tight for this speed: say which radius works.
     wz_max = speeds.limits.wz_max
     if math.degrees(speed / radius) > wz_max:
-        r = speed / math.radians(wz_max)
-        return Result(False, f"too tight: at {speed:g} m/s the radius must be at least {math.ceil(r * 100) / 100} m")
+        return Result(False, f"too tight: at {speed:g} m/s the radius must be at least {min_radius(speed, wz_max)} m")
     # 3-5. The math, then walk (which checks the move with check_move and queues it).
     wz_deg = sign * math.degrees(speed / radius)
     seconds = abs(angle) / abs(wz_deg)
