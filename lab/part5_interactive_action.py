@@ -73,7 +73,28 @@ async def interactive_action(robot: Robot, action: str) -> Result:
     # QUEUE IT:
     # 5. return await robot.queue(f"{trick.name} {clip}", job, trick.clip_time_estimate(clip),
     #                              then=...)   LOCOMOTION after the exit clip, else trick.
-    return not_written("TODO 9", "interactive_action in lab/part5_interactive_action.py")
+    found = robot.action_ids().get(action)
+    if found is None:
+        return Result(False, f"unknown interactive action {action}; available: {list(robot.action_ids())}")
+    trick, clip = found
+    if robot.state_after_queue is not trick:  # now: will Pupper be in the trick when this runs?
+        return Result(False, f"{action} only works while {trick.name} is running; "
+                             f"play it first (play_trick {trick.name})")
+    leaving = clip == trick.exit_clip
+
+    async def job() -> Result:  # later: is Pupper really in the trick right now?
+        if robot.state_now is not trick:  # it may have fallen, been stopped or relaxed since
+            return Result(False, f"{action} skipped: {trick.name} is no longer running; "
+                                 f"play it first (play_trick {trick.name})")
+        if leaving:  # the exit clip leaves the trick: locomotion takes the legs, exit clip first
+            res = await robot.switch_to(LOCOMOTION_CONTROLLER)
+            if not res.ok:
+                return Result(False, f"could not leave {trick.name}: {res.message}")
+            return Result(True, f"played {clip}: left {trick.name}, back in locomotion mode (standing)")
+        return await robot.play_clip(trick, clip)
+
+    return await robot.queue(f"{trick.name} {clip}", job, trick.clip_time_estimate(clip),
+                             then=LOCOMOTION if leaving else trick)
     # ====================================
 
 
@@ -94,10 +115,14 @@ async def interactive_action(robot: Robot, action: str) -> Result:
 # ========== TODO 10: YOUR CODE HERE ==========
 @tool(
     "interactive_action",
-    "TODO 10: describe interactive_action for Gemini. Actions:\n{actions}",
-    action=Param("string", "TODO 10", enum=ACTION_IDS),
+    "Ask a running interactive trick for one of its actions, like shaking a paw while"
+    " sitting. Only works while that trick is running: play_trick it first (you can call"
+    " both in a row, in order). The trick keeps its pose after each action until you"
+    " call its exit action (like stand_up), or any other motion, which ends the trick."
+    " Actions:\n{actions}",
+    action=Param("string", "The action to play, exactly as listed: it names the trick it belongs to.", enum=ACTION_IDS),
 )
 async def interactive_action_tool(robot: Robot, action: str) -> Result:
     # One line: call interactive_action(robot, action) (your TODO 9), await it, and return it.
-    return not_written("TODO 10", "interactive_action in lab/part5_interactive_action.py")
+    return await interactive_action(robot, action)
 # =====================================
