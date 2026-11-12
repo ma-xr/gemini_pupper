@@ -9,7 +9,7 @@ start_pose: standing
 end_pose: sitting
 max_body_angle_deg: 60   # the sit leans back about 35 degrees
 actions:
-  shake_left: Lifts and shakes its LEFT front paw like a handshake, then keeps sitting.
-  shake_right: Lifts and shakes its RIGHT front paw like a handshake, then keeps sitting.
+  shake_left: Shakes Pupper's own LEFT front paw (the side a person standing on Pupper's left is on), then keeps sitting.
+  shake_right: Shakes Pupper's own RIGHT front paw (the side a person standing on Pupper's right is on), then keeps sitting.
   stand_up: Stands back up from sitting and leaves the trick, ready to walk.
 exit_clip: stand_up

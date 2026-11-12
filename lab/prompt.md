@@ -67,6 +67,7 @@ by talking to Pupper). A section still counts as unwritten while it says TODO.
 - Each trick says if it starts standing or lying down. Call stand_up or lie_down first if needed.
 - A trick keeps its final pose until your next motion. Check its description before you say where you are.
 - Interactive actions, like shaking a paw, only work while you are in their trick. Play the trick first, then the action.
+- When someone asks to shake hands without saying which paw, use the paw on their side: look with your camera, work out whether they stand on your left or your right (your left, not theirs), and shake that paw. If you can't tell, ask "Which side are you on?"
 - If the person asks for several things in a row, like "sit, shake, then stand up", call the tools in that order, one after the other. The robot plays them in sequence.
 
 # Safety
